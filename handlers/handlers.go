@@ -1,103 +1,60 @@
 package handlers
 
 import (
-	"database/sql"
 	"encoding/json"
-	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi"
+	"github.com/ilholbea/gym-rat/config"
+	"github.com/ilholbea/gym-rat/internal"
+	"github.com/ilholbea/gym-rat/types"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
+const (
+	Host     = "localhost"
+	Port     = "5432"
+	User     = "postgres"
+	Password = "-"
+	Name     = "gymRat"
+)
+
 func createExercise(w http.ResponseWriter, r *http.Request) {
-	newExercise := exercise{}
+	newExercise := types.Exercise{}
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(500)
-		log.Fatalf("unable to read request body, %v", err)
+		log.Errorf("internal server error: unable to read request body, %v", err)
 	}
 
 	err = json.Unmarshal(body, &newExercise)
 	if err != nil {
+		log.Errorf("internal server error: unable to unmarshal body: %v", err)
 		w.WriteHeader(500)
-		log.Fatalf("unable to unmarshal, %v", err)
+		return
 	}
 
-	db, err := connectToDB()
+	db, err := internal.New(&config.Database{
+		Host:     Host,
+		Port:     Port,
+		User:     User,
+		Password: Password,
+		Name:     Name,
+	})
+
+	err = db.Create(&newExercise)
 	if err != nil {
+		log.Errorf("internal server error: unable to create new exercise: %v", err)
 		w.WriteHeader(500)
-		log.Fatalf("unable to connect to DB, %v", err)
+		return
 	}
-
-	insertStatement := `INSERT INTO exercise(id, name, description, video, image) VALUES(` + newExercise.ID + ",'" + newExercise.Name + "','" + newExercise.Description + "','" + newExercise.Video + "','" + newExercise.Image + "')"
-
-	_, err = db.Exec(insertStatement)
-	if err != nil {
-		w.WriteHeader(500)
-		log.Fatalf("unable to execute query, %v", err)
-	}
-
-	defer func(db *sql.DB) {
-		err := db.Close()
-		if err != nil {
-			return
-		}
-	}(db)
 }
 
-func getExercises(w http.ResponseWriter, r *http.Request) {
-	var response []exercise
-	db, err := connectToDB()
-	if err != nil {
-		w.WriteHeader(500)
-		log.Fatalf("unable to connect to DB, %v", err)
-	}
-
-	selectStatement := `SELECT * from exercise`
-
-	rows, err := db.Query(selectStatement)
-	if err != nil {
-		w.WriteHeader(500)
-		log.Fatalf("unable to execute query, %v", err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var ex exercise
-		if err := rows.Scan(&ex.ID, &ex.Name, &ex.Description, &ex.Video, &ex.Image); err != nil {
-			return
-		}
-		response = append(response, ex)
-	}
-
-	resp, err := json.Marshal(response)
-	if err != nil {
-		log.Fatal("unable to marshal response")
-	}
-
-	_, err = w.Write(resp)
-	if err != nil {
-		log.Fatal("unable to write response")
-	}
-
-	defer func(db *sql.DB) {
-		err := db.Close()
-		if err != nil {
-			return
-		}
-	}(db)
-}
-
-func main() {
+func Router() *chi.Mux {
 	router := chi.NewRouter()
 
-	router.Get("/exercise", getExercises)
 	router.Post("/exercise", createExercise)
 
-	err := http.ListenAndServe(":8080", router)
-	if err != nil {
-		log.Fatal("unable to start server")
-	}
-
+	return router
 }

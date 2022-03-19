@@ -1,9 +1,9 @@
 package config
 
-type DbConfig struct {
-	host     string
-	port     string
-	user     string
-	password string
-	dbname   string
+type Database struct {
+	Host     string
+	Port     string
+	User     string
+	Password string
+	Name     string
 }

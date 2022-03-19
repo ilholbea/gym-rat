@@ -1,7 +1,12 @@
 package service
 
-import "database/sql"
+import (
+	"github.com/ilholbea/gym-rat/types"
+)
 
-type database interface {
-	connectToDatabase(error, *sql.DB)
+type Database interface {
+	Create(exercise *types.Exercise) error
+	//Get() error
+	//Update() error
+	//Delete() error
 }
