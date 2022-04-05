@@ -16,7 +16,7 @@ var dbConfig = &config.Database{
 	Port:     "5432",
 	User:     "postgres",
 	Password: "PASSWORD1!",
-	Name:     "postgres",
+	Name:     "gym-rat",
 }
 
 func createExercise(w http.ResponseWriter, r *http.Request) {

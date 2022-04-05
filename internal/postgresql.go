@@ -25,7 +25,7 @@ func New(c *config.Database) (Postgres, error) {
 
 func (pg *Postgres) Create(exercise *types.Exercise) error {
 	exercise.ID = generateUUID()
-	insertStatement := `INSERT INTO exercise(id, name, description, video, image) VALUES($1, $2, $3, $4, $5);`
+	insertStatement := `INSERT INTO "gym-rat".exercise(id, name, description, video, image) VALUES($1, $2, $3, $4, $5);`
 
 	_, err := pg.database.Exec(insertStatement, exercise.ID, exercise.Name, exercise.Description, exercise.Video, exercise.Image)
 	if err != nil {
@@ -37,7 +37,7 @@ func (pg *Postgres) Create(exercise *types.Exercise) error {
 func (pg *Postgres) GetAll() ([]types.Exercise, error) {
 	var response []types.Exercise
 
-	selectStatement := `SELECT * from exercise`
+	selectStatement := `SELECT * from "gym-rat".exercise`
 	rows, err := pg.database.Query(selectStatement)
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func (pg *Postgres) GetAll() ([]types.Exercise, error) {
 
 func (pg *Postgres) Get(id string) (*types.Exercise, error) {
 	var response []types.Exercise
-	selectStatement := `SELECT * from exercise where id=$1`
+	selectStatement := `SELECT * from "gym-rat".exercise where id=$1`
 	rows, err := pg.database.Query(selectStatement, id)
 	if err != nil {
 		return nil, err
@@ -92,7 +92,7 @@ func (pg *Postgres) Delete(id string) error {
 		return fmt.Errorf("no results found with the id: %s", id)
 	}
 
-	deleteStatement := `DELETE from exercise where id=$1`
+	deleteStatement := `DELETE from "gym-rat".exercise where id=$1`
 	_, err = pg.database.Exec(deleteStatement, id)
 
 	if err != nil {
@@ -111,7 +111,7 @@ func (pg *Postgres) Update(exercise *types.Exercise) error {
 		return fmt.Errorf("no results found with the id: %s", exercise.ID)
 	}
 
-	updateStatement := `UPDATE exercise SET name=$1, description=$2, video=$3, image=$4 where id=$5`
+	updateStatement := `UPDATE "gym-rat".exercise SET name=$1, description=$2, video=$3, image=$4 where id=$5`
 	_, err = pg.database.Exec(updateStatement, exercise.Name, exercise.Description, exercise.Video, exercise.Image, exercise.ID)
 	if err != nil {
 		return err
