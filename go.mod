@@ -6,6 +6,7 @@ require github.com/lib/pq v1.10.4
 
 require (
 	github.com/go-chi/chi v1.5.4
+	github.com/google/uuid v1.3.0
 	github.com/sirupsen/logrus v1.8.1
 )
 

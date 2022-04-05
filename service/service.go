@@ -6,7 +6,8 @@ import (
 
 type Database interface {
 	Create(exercise *types.Exercise) error
-	//Get() error
-	//Update() error
-	//Delete() error
+	GetAll() ([]types.Exercise, error)
+	Get(id string) (*types.Exercise, error)
+	Update(exercise *types.Exercise) error
+	Delete(id string) error
 }

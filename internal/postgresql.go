@@ -3,10 +3,10 @@ package internal
 import (
 	"database/sql"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/ilholbea/gym-rat/config"
 	"github.com/ilholbea/gym-rat/types"
 	_ "github.com/lib/pq"
-	log "github.com/sirupsen/logrus"
 )
 
 type Postgres struct {
@@ -24,14 +24,103 @@ func New(c *config.Database) (Postgres, error) {
 }
 
 func (pg *Postgres) Create(exercise *types.Exercise) error {
-	insertStatement := `INSERT INTO exercise(name, description, video, image) VALUES($1, $2, $3, $4) returning uuid`
+	exercise.ID = generateUUID()
+	insertStatement := `INSERT INTO exercise(id, name, description, video, image) VALUES($1, $2, $3, $4, $5);`
 
-	var uuid string
-	err := pg.database.QueryRow(insertStatement, exercise.Name, exercise.Description, exercise.Video, exercise.Image).Scan(&uuid)
+	_, err := pg.database.Exec(insertStatement, exercise.ID, exercise.Name, exercise.Description, exercise.Video, exercise.Image)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (pg *Postgres) GetAll() ([]types.Exercise, error) {
+	var response []types.Exercise
+
+	selectStatement := `SELECT * from exercise`
+	rows, err := pg.database.Query(selectStatement)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var retrievedExercise types.Exercise
+		if err = rows.Scan(&retrievedExercise.ID, &retrievedExercise.Name, &retrievedExercise.Description, &retrievedExercise.Video, &retrievedExercise.Image); err != nil {
+			return nil, err
+		}
+		response = append(response, retrievedExercise)
+	}
+	return response, nil
+}
+
+func (pg *Postgres) Get(id string) (*types.Exercise, error) {
+	var response []types.Exercise
+	selectStatement := `SELECT * from exercise where id=$1`
+	rows, err := pg.database.Query(selectStatement, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var retrievedExercise types.Exercise
+		if err = rows.Scan(&retrievedExercise.ID, &retrievedExercise.Name, &retrievedExercise.Description, &retrievedExercise.Video, &retrievedExercise.Image); err != nil {
+			return nil, err
+		}
+		response = append(response, retrievedExercise)
+	}
+
+	if len(response) > 1 {
+		return nil, fmt.Errorf("too many number of results with the id: %s", id)
+	}
+
+	if len(response) == 0 {
+		return nil, fmt.Errorf("no results found with the id: %s", id)
+	}
+
+	return &response[0], nil
+}
+
+func (pg *Postgres) Delete(id string) error {
+	found, err := pg.Get(id)
 	if err != nil {
 		return err
 	}
 
-	log.Printf("Inserted record with id '%s'", uuid)
+	if found == nil {
+		return fmt.Errorf("no results found with the id: %s", id)
+	}
+
+	deleteStatement := `DELETE from exercise where id=$1`
+	_, err = pg.database.Exec(deleteStatement, id)
+
+	if err != nil {
+		return err
+	}
 	return nil
+}
+
+func (pg *Postgres) Update(exercise *types.Exercise) error {
+	found, err := pg.Get(exercise.ID)
+	if err != nil {
+		return err
+	}
+
+	if found == nil {
+		return fmt.Errorf("no results found with the id: %s", exercise.ID)
+	}
+
+	updateStatement := `UPDATE exercise SET name=$1, description=$2, video=$3, image=$4 where id=$5`
+	_, err = pg.database.Exec(updateStatement, exercise.Name, exercise.Description, exercise.Video, exercise.Image, exercise.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func generateUUID() string {
+	generatedUUID := uuid.New()
+	return generatedUUID.String()
 }
