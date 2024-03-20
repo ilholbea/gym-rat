@@ -1,7 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	config "github.com/ilholbea/gym-rat/config"
+)
 
 func main() {
-	fmt.Printf("hello world")
+	conf := config.NewConfig()
+
+	fmt.Printf(conf.Database.Host)
 }

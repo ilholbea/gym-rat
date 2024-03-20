@@ -16,4 +16,7 @@ clean:
 	@echo "Cleaning"
 	del /s /q "$(BUILD_DIR)"
 
+test:
+	go test -v ./...
+
 .PHONY: all build run clean
