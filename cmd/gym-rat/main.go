@@ -6,7 +6,10 @@ import (
 )
 
 func main() {
-	conf := config.NewConfig()
+	conf, err := config.NewConfig()
+	if err != nil {
+		panic("unable to load config")
+	}
 
-	fmt.Printf(conf.Database.Host)
+	fmt.Printf(conf.DbConfig.Host)
 }

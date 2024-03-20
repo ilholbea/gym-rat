@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 )
 
@@ -14,13 +15,24 @@ type Database struct {
 }
 
 type Config struct {
-	Database
+	DbConfig Database
 }
 
-func NewConfig() *Config {
-	return &Config{
-		Database{
-			Host: os.Getenv("MYCONSTANT"),
-		},
+func NewConfig() (*Config, error) {
+
+	DbHost := os.Getenv("DB_HOST")
+	if DbHost == "" {
+		return &Config{}, fmt.Errorf("unable to load db_host")
 	}
+
+	return &Config{
+		DbConfig: Database{
+			Host:     DbHost,
+			Port:     os.Getenv("DB_PORT"),
+			User:     os.Getenv("DB_USER"),
+			Password: os.Getenv("DB_PASSWORD"),
+			Database: os.Getenv("DB_DATABASE"),
+			Schema:   os.Getenv("DB_SCHEMA"),
+		},
+	}, nil
 }

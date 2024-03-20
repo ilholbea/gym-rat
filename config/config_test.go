@@ -1,37 +1,63 @@
 package config
 
 import (
+	"errors"
 	"github.com/stretchr/testify/assert"
-	"os"
 	"testing"
 )
 
-const MY_CONSTANT_VALUE = "my-value"
+const MockHost = "mock-host"
+const MockPort = "mock-port"
+const MockUser = "mock-user"
+const MockPassword = "mock-password"
+const MockDatabase = "mock-database"
+const MockSchema = "mock-schema"
 
 func TestNewConfig(t *testing.T) {
 	tests := []struct {
-		name     string
-		expected *Config
+		name        string
+		expected    *Config
+		expectedErr error
 	}{
-		{name: "test", expected: &Config{Database{Host: MY_CONSTANT_VALUE}}},
+		{
+			name: "correct values",
+			expected: &Config{
+				DbConfig: Database{
+					Host:     MockHost,
+					Port:     MockPort,
+					User:     MockUser,
+					Password: MockPassword,
+					Database: MockDatabase,
+					Schema:   MockSchema,
+				},
+			},
+			expectedErr: nil,
+		},
+		{
+			name:        "missing values",
+			expected:    &Config{},
+			expectedErr: errors.New("unable to load db_host"),
+		},
 	}
-
-	setEnvironmentVariables()
-	defer unsetEnvironmentVariables()
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			conf := NewConfig()
+			setEnvironmentVariables(t, test.expected)
+			conf, err := NewConfig()
+			if err != nil {
+				assert.Equal(t, test.expectedErr, err, "expected %q, got %q", test.expectedErr, err)
+			}
 			assert.Equal(t, test.expected, conf, "expected %q, go %q", test.expected, conf)
 		})
 	}
 
 }
 
-func setEnvironmentVariables() {
-	_ = os.Setenv("MYCONSTANT", MY_CONSTANT_VALUE)
-}
-
-func unsetEnvironmentVariables() {
-	_ = os.Unsetenv("MYCONSTANT")
+func setEnvironmentVariables(t *testing.T, conf *Config) {
+	t.Setenv("DB_HOST", conf.DbConfig.Host)
+	t.Setenv("DB_PORT", conf.DbConfig.Port)
+	t.Setenv("DB_USER", conf.DbConfig.User)
+	t.Setenv("DB_PASSWORD", conf.DbConfig.Password)
+	t.Setenv("DB_DATABASE", conf.DbConfig.Database)
+	t.Setenv("DB_SCHEMA", conf.DbConfig.Schema)
 }
