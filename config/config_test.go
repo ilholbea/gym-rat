@@ -36,7 +36,7 @@ func TestNewConfig(t *testing.T) {
 		{
 			name:        "missing values",
 			expected:    &Config{},
-			expectedErr: errors.New("unable to load db_host"),
+			expectedErr: errors.New("unable to load environment variable"),
 		},
 	}
 

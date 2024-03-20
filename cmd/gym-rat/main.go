@@ -12,7 +12,7 @@ func main() {
 		panic("unable to find env file")
 	}
 
-	conf, err := config.NewConfig()
+	_, err = config.NewConfig()
 	if err != nil {
 		panic("unable to load config")
 	}
