@@ -21,8 +21,19 @@ type Config struct {
 func NewConfig() (*Config, error) {
 
 	DbHost := os.Getenv("DB_HOST")
-	if DbHost == "" {
-		return &Config{}, fmt.Errorf("unable to load db_host")
+	DbPort := os.Getenv("DB_PORT")
+	DbUser := os.Getenv("DB_USER")
+	DbPassword := os.Getenv("DB_PASSWORD")
+	DbDatabase := os.Getenv("DB_DATABASE")
+	DbSchema := os.Getenv("DB_SCHEMA")
+
+	if DbHost == "" ||
+		DbPort == "" ||
+		DbUser == "" ||
+		DbPassword == "" ||
+		DbDatabase == "" ||
+		DbSchema == "" {
+		return &Config{}, fmt.Errorf("unable to load environment variable")
 	}
 
 	return &Config{
