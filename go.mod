@@ -3,6 +3,7 @@ module github.com/ilholbea/gym-rat
 go 1.22.1
 
 require (
+	github.com/go-chi/chi/v5 v5.0.12
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.9.0
 )
