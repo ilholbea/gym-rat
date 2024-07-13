@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-type Database struct {
+type DatabaseConfig struct {
 	Host     string
 	Port     string
 	User     string
@@ -14,12 +14,7 @@ type Database struct {
 	Schema   string
 }
 
-type Config struct {
-	DbConfig Database
-}
-
-func NewConfig() (*Config, error) {
-
+func GetDatabaseConfig() (*DatabaseConfig, error) {
 	DbHost := os.Getenv("DB_HOST")
 	DbPort := os.Getenv("DB_PORT")
 	DbUser := os.Getenv("DB_USER")
@@ -33,17 +28,15 @@ func NewConfig() (*Config, error) {
 		DbPassword == "" ||
 		DbDatabase == "" ||
 		DbSchema == "" {
-		return &Config{}, fmt.Errorf("unable to load environment variable")
+		return &DatabaseConfig{}, fmt.Errorf("unable to load environment variable")
 	}
 
-	return &Config{
-		DbConfig: Database{
-			Host:     DbHost,
-			Port:     os.Getenv("DB_PORT"),
-			User:     os.Getenv("DB_USER"),
-			Password: os.Getenv("DB_PASSWORD"),
-			Database: os.Getenv("DB_DATABASE"),
-			Schema:   os.Getenv("DB_SCHEMA"),
-		},
+	return &DatabaseConfig{
+		Host:     DbHost,
+		Port:     os.Getenv("DB_PORT"),
+		User:     os.Getenv("DB_USER"),
+		Password: os.Getenv("DB_PASSWORD"),
+		Database: os.Getenv("DB_DATABASE"),
+		Schema:   os.Getenv("DB_SCHEMA"),
 	}, nil
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/ilholbea/gym-rat/config"
+	"github.com/ilholbea/gym-rat/dependencies"
 	"github.com/ilholbea/gym-rat/handlers"
 	"github.com/joho/godotenv"
 	"log"
@@ -16,13 +17,19 @@ func main() {
 		panic("unable to find env file")
 	}
 
-	conf, err := config.NewConfig()
+	databaseConf, err := config.GetDatabaseConfig()
 	if err != nil {
-		panic("unable to load config")
+		panic("unable to load database config")
+	}
+
+	// Connect to the database
+	db, err := dependencies.ConnectDB(databaseConf)
+	if err != nil {
+		log.Fatalf("Could not connect to the database: %v\n", err)
 	}
 
 	router := chi.NewRouter()
-	server, err := handlers.NewServer(router, conf)
+	server, err := handlers.NewServer(router, db)
 	if err != nil {
 		panic("unable to start server")
 	}

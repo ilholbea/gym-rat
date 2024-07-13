@@ -16,26 +16,24 @@ const MockSchema = "mock-schema"
 func TestNewConfig(t *testing.T) {
 	tests := []struct {
 		name        string
-		expected    *Config
+		expected    *DatabaseConfig
 		expectedErr error
 	}{
 		{
 			name: "correct values",
-			expected: &Config{
-				DbConfig: Database{
-					Host:     MockHost,
-					Port:     MockPort,
-					User:     MockUser,
-					Password: MockPassword,
-					Database: MockDatabase,
-					Schema:   MockSchema,
-				},
+			expected: &DatabaseConfig{
+				Host:     MockHost,
+				Port:     MockPort,
+				User:     MockUser,
+				Password: MockPassword,
+				Database: MockDatabase,
+				Schema:   MockSchema,
 			},
 			expectedErr: nil,
 		},
 		{
 			name:        "missing values",
-			expected:    &Config{},
+			expected:    &DatabaseConfig{},
 			expectedErr: errors.New("unable to load environment variable"),
 		},
 	}
@@ -43,7 +41,7 @@ func TestNewConfig(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			setEnvironmentVariables(t, test.expected)
-			conf, err := NewConfig()
+			conf, err := GetDatabaseConfig()
 			if err != nil {
 				assert.Equal(t, test.expectedErr, err, "expected %q, got %q", test.expectedErr, err)
 			}
@@ -53,11 +51,11 @@ func TestNewConfig(t *testing.T) {
 
 }
 
-func setEnvironmentVariables(t *testing.T, conf *Config) {
-	t.Setenv("DB_HOST", conf.DbConfig.Host)
-	t.Setenv("DB_PORT", conf.DbConfig.Port)
-	t.Setenv("DB_USER", conf.DbConfig.User)
-	t.Setenv("DB_PASSWORD", conf.DbConfig.Password)
-	t.Setenv("DB_DATABASE", conf.DbConfig.Database)
-	t.Setenv("DB_SCHEMA", conf.DbConfig.Schema)
+func setEnvironmentVariables(t *testing.T, conf *DatabaseConfig) {
+	t.Setenv("DB_HOST", conf.Host)
+	t.Setenv("DB_PORT", conf.Port)
+	t.Setenv("DB_USER", conf.User)
+	t.Setenv("DB_PASSWORD", conf.Password)
+	t.Setenv("DB_DATABASE", conf.Database)
+	t.Setenv("DB_SCHEMA", conf.Schema)
 }
