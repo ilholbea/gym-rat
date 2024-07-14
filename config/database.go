@@ -3,11 +3,12 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 )
 
 type DatabaseConfig struct {
 	Host     string
-	Port     string
+	Port     int
 	User     string
 	Password string
 	Database string
@@ -31,9 +32,13 @@ func GetDatabaseConfig() (*DatabaseConfig, error) {
 		return &DatabaseConfig{}, fmt.Errorf("unable to load environment variable")
 	}
 
+	port, err := strconv.Atoi(DbPort)
+	if err != nil {
+		return &DatabaseConfig{}, fmt.Errorf("unable to parse DB_PORT")
+	}
 	return &DatabaseConfig{
 		Host:     DbHost,
-		Port:     os.Getenv("DB_PORT"),
+		Port:     port,
 		User:     os.Getenv("DB_USER"),
 		Password: os.Getenv("DB_PASSWORD"),
 		Database: os.Getenv("DB_DATABASE"),
