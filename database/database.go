@@ -3,8 +3,9 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"github.com/ilholbea/gym-rat/config"
 	_ "github.com/lib/pq"
+
+	"github.com/ilholbea/gym-rat/config"
 )
 
 // ConnectDB establishes a connection to the PostgreSQL database

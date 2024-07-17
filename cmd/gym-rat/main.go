@@ -3,18 +3,20 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
+	http "net/http"
+	"os"
+	"os/signal"
+	"time"
+
+	"github.com/joho/godotenv"
+
 	"github.com/ilholbea/gym-rat/config"
 	"github.com/ilholbea/gym-rat/database"
 	"github.com/ilholbea/gym-rat/handlers"
 	"github.com/ilholbea/gym-rat/repository"
 	"github.com/ilholbea/gym-rat/routes"
 	"github.com/ilholbea/gym-rat/services"
-	"github.com/joho/godotenv"
-	"log"
-	"net/http"
-	"os"
-	"os/signal"
-	"time"
 )
 
 func main() {
@@ -24,13 +26,13 @@ func main() {
 		panic("unable to find env file")
 	}
 
-	databaseConf, err := config.GetDatabaseConfig()
+	conf, err := config.NewConfig()
 	if err != nil {
 		panic("unable to load db config")
 	}
 
 	// Connect to the db
-	db, err := database.ConnectDB(databaseConf)
+	db, err := database.ConnectDB(conf.DatabaseConfig)
 	if err != nil {
 		log.Fatalf("Could not connect to the db: %v\n", err)
 	}
@@ -65,7 +67,7 @@ func main() {
 	signal.Notify(stop, os.Interrupt)
 	<-stop
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
 		log.Fatalf("Could not gracefully shutdown the server: %v\n", err)
